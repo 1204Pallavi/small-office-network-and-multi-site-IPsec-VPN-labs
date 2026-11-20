@@ -1,0 +1,80 @@
+! DS1 - HQ distribution switch 1. Cisco 3560-24PS.
+! Roles: HSRP active + STP root for VLAN 10 (standby/secondary for VLAN 20), Root Guard toward AS1,
+!        DHCP relay to HQ-R1, OSPF.
+!
+enable
+configure terminal
+hostname DS1
+no ip domain-lookup
+enable secret CHANGE_ME
+service password-encryption
+ip routing
+!
+spanning-tree mode rapid-pvst
+spanning-tree vlan 10 root primary
+spanning-tree vlan 20 root secondary
+!
+vlan 10
+ name ENG
+vlan 20
+ name OPS
+vlan 999
+ name BLACKHOLE
+!
+! --- Routed uplink to HQ-R1 ---
+interface GigabitEthernet0/1
+ description Routed link to HQ-R1
+ no switchport
+ ip address 10.1.0.2 255.255.255.252
+ no shutdown
+!
+! --- Inter-distribution trunk ---
+interface FastEthernet0/23
+ description Trunk to DS2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 999
+ switchport trunk allowed vlan 10,20
+ no shutdown
+!
+! --- Downlink to AS1, Root Guard ---
+interface FastEthernet0/1
+ description Trunk to AS1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 999
+ switchport trunk allowed vlan 10,20
+ spanning-tree guard root
+ no shutdown
+!
+! --- SVIs with HSRP ---
+interface Vlan10
+ description ENG gateway
+ ip address 10.1.10.2 255.255.255.0
+ ip helper-address 10.1.0.1
+ standby 10 ip 10.1.10.1
+ standby 10 priority 110
+ standby 10 preempt
+ no shutdown
+interface Vlan20
+ description OPS gateway
+ ip address 10.1.20.2 255.255.255.0
+ ip helper-address 10.1.0.1
+ standby 20 ip 10.1.20.1
+ standby 20 priority 100
+ standby 20 preempt
+ no shutdown
+!
+! --- OSPF ---
+router ospf 1
+ router-id 5.5.5.5
+ network 10.1.0.0 0.0.0.7 area 0
+ network 10.1.10.0 0.0.0.255 area 0
+ network 10.1.20.0 0.0.0.255 area 0
+ passive-interface Vlan10
+ passive-interface Vlan20
+!
+line console 0
+ logging synchronous
+end
+write memory

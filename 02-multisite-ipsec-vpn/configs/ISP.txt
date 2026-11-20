@@ -1,0 +1,26 @@
+! ISP - simulates the Internet between the three sites. Cisco 2911.
+! No routing needed: all three links are directly connected.
+!
+enable
+configure terminal
+hostname ISP
+no ip domain-lookup
+enable secret CHANGE_ME
+!
+interface GigabitEthernet0/0
+ description To HQ-R1
+ ip address 203.0.113.1 255.255.255.252
+ no shutdown
+interface GigabitEthernet0/1
+ description To BR1-R1
+ ip address 198.51.100.1 255.255.255.252
+ no shutdown
+interface GigabitEthernet0/2
+ description To BR2-R1
+ ip address 192.0.2.1 255.255.255.252
+ no shutdown
+!
+line console 0
+ logging synchronous
+end
+write memory

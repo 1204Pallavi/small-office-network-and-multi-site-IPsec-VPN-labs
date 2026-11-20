@@ -1,0 +1,21 @@
+! ISP - simulates the Internet. Cisco 2911.
+!
+enable
+configure terminal
+hostname ISP
+no ip domain-lookup
+enable secret CHANGE_ME
+!
+interface GigabitEthernet0/0
+ description Link to R1 (WAN)
+ ip address 203.0.113.1 255.255.255.248
+ no shutdown
+!
+interface Loopback0
+ description Simulated Internet host
+ ip address 198.51.100.1 255.255.255.255
+!
+line console 0
+ logging synchronous
+end
+write memory

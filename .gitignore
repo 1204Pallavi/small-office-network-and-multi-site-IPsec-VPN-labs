@@ -1,0 +1,20 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Never commit real credentials or captures from real networks
+*.key
+*.pem
+.env
+secrets*
+real-configs/
+*.pcap
+*.pcapng
+
+# Packet Tracer autosaves / backups
+*.pka~
+*.pkt.bak
+*.bak
